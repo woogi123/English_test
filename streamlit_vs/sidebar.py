@@ -13,7 +13,7 @@ def show_sidebar():
     TOEIC_FILE = "toeic.csv"
     TEPS_FILE = "teps.csv"
 
-    # 로그인 팝업
+# 로그인 팝업
     @st.dialog("🔐 Login")
     def login_dialog():
         st.markdown("### Welcome Back")
@@ -24,23 +24,32 @@ def show_sidebar():
         if st.button("Login", key="login_dialog"):
             if not email or not password:
                 st.warning("필수 항목을 입력해주세요.")
+            elif email == "sw_admin" and password == "admin123":
+                # 관리자 계정은 DB 없이 바로 로그인
+                st.session_state["logged_in"] = True
+                st.session_state["user_email"] = email
+                st.session_state["user_name"] = "관리자"
+                st.session_state["role"] = "admin"
+                st.session_state["page"] = "main"
+                st.success("관리자님, 어서오세요.")
+                st.rerun()
             else:
+                # 일반 사용자 로그인 (DB 조회)
                 try:
                     user = login_user(email, password)
                     if user:
                         st.session_state["logged_in"] = True
                         st.session_state["user_email"] = email
                         st.session_state["user_name"] = user[1]
-                        if email == "sw_admin" and password == "admin123":
-                            st.session_state["role"] = "admin"
-                            st.success("관리자님, 어서오세요.")
-                        else:
-                            st.session_state["role"] = "user"
-                            st.success(f"{user[1]}님, 환영합니다!")
+                        st.session_state["role"] = "user"
+                        st.session_state["page"] = "main"
+                        st.success(f"{user[1]}님, 환영합니다!")
+                        st.rerun()
                     else:
                         st.error("ID 또는 비밀번호 오류")
                 except Exception as e:
                     st.error("로그인에 실패했습니다.")
+
 
     # 회원가입 팝업
     @st.dialog("📝 Register")
@@ -157,9 +166,9 @@ def show_sidebar():
             else:
                 try:
                     # 단어 불러오기
-                    suneung = load_words_from_excel("data/suneung.csv")   
-                    toeic = load_words_from_excel("data/toeic.csv")
-                    teps = load_words_from_excel("data/teps.csv")
+                    suneung = load_words_from_excel("suneung.csv")   
+                    toeic = load_words_from_excel("toeic.csv")
+                    teps = load_words_from_excel("teps.csv")
 
                     all_words = suneung + toeic + teps
 

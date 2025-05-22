@@ -125,6 +125,7 @@ def run_wordbook_toeic():
     # ✅ 시험으로 이동 버튼
     if st.button("📝 taking a test", key="to_test_wordbook"):
         st.session_state["test_type"] = "toeic"
+        st.session_state.questions = load_words_from_excel(FILE_PATH) 
         st.session_state.page = "test"
         st.session_state.q_index = 0
         st.session_state.score = 0
@@ -134,17 +135,17 @@ def run_wordbook_toeic():
         st.session_state.show_ranking = False
         st.rerun()
 
-    # ✅ 탭 나누기
+    # 탭 나누기
     tab1, tab2 = st.tabs(["📖 Wordbook", "📌"])
 
     with tab1:
         st.subheader("전체 단어")
-        for item in st.session_state.wordbook:
+        for i, item in enumerate(st.session_state.wordbook): 
             col1, col2 = st.columns([4, 1])
             with col1:
                 st.markdown(f"**{item['word']}** - {item['meaning']}")
             with col2:
-                if st.button("📌 Keep", key=f"keep_{item['word']}"):
+                if st.button("📌 Keep", key=f"keep_{i}"):
                     try:
                         if item in st.session_state.keep_words:
                             st.info("이미 저장된 단어입니다.")

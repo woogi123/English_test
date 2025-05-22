@@ -59,7 +59,6 @@ def get_teps():
     
     driver.get("https://blog.naver.com/lblucy/223865867643")
 
-    # iframe 내부로 진입
     driver.switch_to.frame("mainFrame")
     time.sleep(2)
 
@@ -201,6 +200,7 @@ def run_wordbook_teps():
     # ✅ 시험으로 이동 버튼
     if st.button("📝 taking a test", key="to_test_wordbook"):
         st.session_state["test_type"] = "teps"
+        st.session_state.questions = load_words_from_excel(FILE_PATH) 
         st.session_state.page = "test"
         st.session_state.q_index = 0
         st.session_state.score = 0
