@@ -1,7 +1,9 @@
 import streamlit as st
 from word_data import load_words_from_excel
 from admin import show_admin_panel
+import random
 import time
+
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options as ChromeOptions
@@ -173,10 +175,10 @@ for word, meaning in word_list:
 
 def run_wordbook_teps():
    
-    # ✅ TEPS 단어장 파일 경로
+    # TEPS 단어장 파일 경로
     FILE_PATH = "teps.csv"
 
-    # ✅ session_state에 단어장 초기화 + 예외 흐름 추가
+    # session_state에 단어장 초기화 + 예외 흐름 추가
     try:
         if "wordbook" not in st.session_state:
             st.session_state.wordbook = load_words_from_excel(FILE_PATH)
@@ -193,15 +195,15 @@ def run_wordbook_teps():
 
     st.title("📘TEPS")
 
-    # ✅ 관리자 모드
+    # 관리자 모드
     if st.session_state.get("role") == "admin":
         st.session_state.dataset = "teps" 
         show_admin_panel()
 
-    # ✅ 시험으로 이동 버튼
+    # 시험으로 이동 버튼
     if st.button("📝 taking a test", key="to_test_wordbook"):
         st.session_state["test_type"] = "teps"
-        st.session_state.questions = load_words_from_excel(FILE_PATH) 
+        st.session_state.questions = random.sample(load_words_from_excel(FILE_PATH), 20)
         st.session_state.page = "test"
         st.session_state.q_index = 0
         st.session_state.score = 0
@@ -209,9 +211,15 @@ def run_wordbook_teps():
         st.session_state.wrong = 0
         st.session_state.wrong_words = []
         st.session_state.show_ranking = False
+        
+        # 이전 테스트 상태들 초기화
+        st.session_state.submitted = False
+        st.session_state.answer_input = ""
+        st.session_state.feedback_message = ("info", "")
+        
         st.rerun()
 
-    # ✅ 탭 나누기
+    # 탭 나누기
     tab1, tab2 = st.tabs(["📖 Wordbook", "📌"])
 
     with tab1:
