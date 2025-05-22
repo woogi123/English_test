@@ -25,7 +25,7 @@ def show_sidebar():
             if not email or not password:
                 st.warning("필수 항목을 입력해주세요.")
             elif email == "sw_admin" and password == "admin123":
-                # ✅ 관리자 계정은 DB 없이 바로 로그인
+                # 관리자 계정은 DB 없이 바로 로그인
                 st.session_state["logged_in"] = True
                 st.session_state["user_email"] = email
                 st.session_state["user_name"] = "관리자"
@@ -34,7 +34,7 @@ def show_sidebar():
                 st.success("관리자님, 어서오세요.")
                 st.rerun()
             else:
-                # ✅ 일반 사용자 로그인 (DB 조회)
+                # 일반 사용자 로그인 (DB 조회)
                 try:
                     user = login_user(email, password)
                     if user:
@@ -166,9 +166,9 @@ def show_sidebar():
             else:
                 try:
                     # 단어 불러오기
-                    suneung = load_words_from_excel("data/suneung.csv")   
-                    toeic = load_words_from_excel("data/toeic.csv")
-                    teps = load_words_from_excel("data/teps.csv")
+                    suneung = load_words_from_excel("suneung.csv")   
+                    toeic = load_words_from_excel("toeic.csv")
+                    teps = load_words_from_excel("teps.csv")
 
                     all_words = suneung + toeic + teps
 
