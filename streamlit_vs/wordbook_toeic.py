@@ -1,7 +1,7 @@
 import streamlit as st
 from word_data import load_words_from_excel
 from admin import show_admin_panel
-
+import random
 import requests
 from bs4 import BeautifulSoup
 
@@ -125,7 +125,7 @@ def run_wordbook_toeic():
     # ✅ 시험으로 이동 버튼
     if st.button("📝 taking a test", key="to_test_wordbook"):
         st.session_state["test_type"] = "toeic"
-        st.session_state.questions = load_words_from_excel(FILE_PATH) 
+        st.session_state.questions = random.sample(load_words_from_excel(FILE_PATH), 20)
         st.session_state.page = "test"
         st.session_state.q_index = 0
         st.session_state.score = 0
@@ -133,6 +133,9 @@ def run_wordbook_toeic():
         st.session_state.wrong = 0
         st.session_state.wrong_words = []
         st.session_state.show_ranking = False
+        st.session_state.submitted = False
+        st.session_state.answer_input = ""
+        st.session_state.feedback_message = ("info", "")
         st.rerun()
 
     # 탭 나누기

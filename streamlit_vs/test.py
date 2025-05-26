@@ -9,50 +9,32 @@ def run_test():
 
     test_type = st.session_state.test_type
 
-    # ✅ 엑셀 기반 데이터 불러오기 + 예외 흐름 추가
+    # ✅ 단어 불러오기 및 섞기
     try:
-        if test_type == "suneung":
-            if "questions" not in st.session_state:
-                data = load_words_from_excel("suneung.csv")
+        if "questions" not in st.session_state:
+            if test_type in ["suneung", "toeic", "teps"]:
+                data = load_words_from_excel(f"{test_type}.csv")
                 if not data:
                     st.error("단어를 불러올 수 없습니다.")
                     return
-                st.session_state.questions = random.sample(data, min(20, len(data)))
 
-        elif test_type == "toeic":
-            if "questions" not in st.session_state:
-                data = load_words_from_excel("toeic.csv")
+            elif test_type == "today":
+                data = get_today_words()
                 if not data:
                     st.error("단어를 불러올 수 없습니다.")
                     return
-                st.session_state.questions = random.sample(data, min(20, len(data)))
+                st.session_state.questions = data[:20]  # ✅ 순서 고정
 
-        elif test_type == "teps":
-            if "questions" not in st.session_state:
-                data = load_words_from_excel("teps.csv")
-                if not data:
-                    st.error("단어를 불러올 수 없습니다.")
-                    return
-                st.session_state.questions = random.sample(data, min(20, len(data)))
+            elif test_type == "final":
+                pass  # 추후 구현
 
-        elif test_type == "today":
-            data = get_today_words()
-            if not data:
-                st.error("단어를 불러올 수 없습니다.")
+            else:
+                st.error("❗ 유효하지 않은 테스트 유형입니다.")
                 return
-            st.session_state.questions = data
-
-        elif test_type == "final":
-            pass
-
-        else:
-            st.error("❗ 유효하지 않은 테스트 유형입니다.")
-            return
 
     except Exception as e:
         st.error("로딩에 실패했습니다.")
         return
-
 
     questions = st.session_state.questions
 
@@ -90,7 +72,7 @@ def run_test():
             key=f"input_{st.session_state.q_index}"
         )
 
-        # 제출 버튼 + 예외 흐름 추가
+        # 제출 버튼
         if st.button("제출하기", key=f"submit_{st.session_state.q_index}"):
             user_answer = st.session_state.answer_input.strip().lower()
             try:
@@ -111,7 +93,6 @@ def run_test():
 
             except Exception as e:
                 st.error("채점을 실패했습니다.")
-
 
     else:
         # 제출 결과 표시
