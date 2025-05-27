@@ -1,17 +1,17 @@
 import streamlit as st
 from word_data import load_words_from_excel
 from admin import show_admin_panel
-import random
 import time
-
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
+import random
 import requests
 import csv
 import re
+
 
 def get_today_words_from_naver():
     options = ChromeOptions()
@@ -20,7 +20,7 @@ def get_today_words_from_naver():
     options.add_argument("user-agent=Mozilla/5.0")
 
     # 여기 각자 컴퓨터에 맞게 수정!
-    service = ChromeService(executable_path="C:/Users/lsj55/Desktop/eng_test/chromedriver-win64/chromedriver.exe")
+    service = ChromeService(executable_path="C:\\Users\\lsj55\\Desktop\\eng_test\\chromedriver-win64\\chromedriver.exe")
     driver = webdriver.Chrome(service=service, options=options)
 
     try:
@@ -49,16 +49,16 @@ def get_today_words_from_naver():
         driver.quit()
 
 
-def get_teps(driver_path="chromedriver.exe"):
+def get_teps():
     options = ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    options.add_argument("user-agent=Mozilla/5.0")
 
-    service = ChromeService(executable_path=driver_path)
+    # 각자 환경에 맞게 msedgedriver 경로 지정
+    service = ChromeService(executable_path="C:\\Users\\lsj55\\Desktop\\eng_test\\chromedriver-win64\\chromedriver.exe")
     driver = webdriver.Chrome(service=service, options=options)
-
+    
     driver.get("https://blog.naver.com/lblucy/223865867643")
 
     driver.switch_to.frame("mainFrame")
@@ -126,6 +126,7 @@ def trans_teps_data(text_lines):
 
     return parsed
 
+raw_data = get_teps()
 
 def get_variants(word):
     return list(filter(None, [
@@ -137,7 +138,6 @@ def get_variants(word):
         word + 'd' if word.endswith('e') else ''
     ]))
 
-raw_data = get_teps("C:/Users/lsj55/Desktop/eng_test/chromedriver-win64/chromedriver.exe")
 dict_result = []
 
 for item in raw_data:
@@ -174,11 +174,10 @@ for word, meaning in word_list:
     print(f"{word} - {meaning}")
 
 def run_wordbook_teps():
-   
-    # TEPS 단어장 파일 경로
+    # ✅ TEPS 단어장 파일 경로
     FILE_PATH = "teps.csv"
 
-    # session_state에 단어장 초기화 + 예외 흐름 추가
+    # ✅ session_state에 단어장 초기화 + 예외 흐름 추가
     try:
         if "wordbook" not in st.session_state:
             st.session_state.wordbook = load_words_from_excel(FILE_PATH)
@@ -195,12 +194,12 @@ def run_wordbook_teps():
 
     st.title("📘TEPS")
 
-    # 관리자 모드
+    # ✅ 관리자 모드
     if st.session_state.get("role") == "admin":
         st.session_state.dataset = "teps" 
         show_admin_panel()
 
-    # 시험으로 이동 버튼
+    # ✅ 시험으로 이동 버튼
     if st.button("📝 taking a test", key="to_test_wordbook"):
         st.session_state["test_type"] = "teps"
         st.session_state.questions = random.sample(load_words_from_excel(FILE_PATH), 20)
@@ -219,7 +218,7 @@ def run_wordbook_teps():
         
         st.rerun()
 
-    # 탭 나누기
+    # ✅ 탭 나누기
     tab1, tab2 = st.tabs(["📖 Wordbook", "📌"])
 
     with tab1:

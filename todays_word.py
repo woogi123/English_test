@@ -5,14 +5,13 @@ from word_data import load_words_from_excel
 from admin import show_admin_panel
 import time
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.edge.service import Service as EdgeService
+from selenium.webdriver.edge.options import Options as EdgeOptions
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import csv
 import re
-
-
+import pandas as pd
 
 # 여기서부터는 추가된 20개 오늘의 단어입니다
 
@@ -91,6 +90,7 @@ def run_today_words():
         </div>
     """, unsafe_allow_html=True)
 
+
     # 네비게이션 버튼
     col1, col2, col3 = st.columns([1, 6, 1])
     with col1:
@@ -103,8 +103,6 @@ def run_today_words():
             st.rerun()
 
     st.caption(f"{idx + 1} / {len(words)}")
-
-
     st.markdown("---")
 
     if st.button("📝 Today's test"):
@@ -118,3 +116,24 @@ def run_today_words():
         st.session_state.page = "test"
         st.session_state.show_ranking = True
         st.rerun()
+
+    # 오늘의 추가 단어표 고정 로딩
+    if "today_words20_table" not in st.session_state:
+        try:
+            df = pd.read_csv("today_words20.csv")
+            df_sampled = df.sample(n=20, random_state=42).reset_index(drop=True)
+            df_sampled.index = range(1, 21)
+            df_sampled.index.name = "No."
+            st.session_state.today_words20_table = df_sampled
+        except Exception as e:
+            st.session_state.today_words20_table = f"error: {e}"
+
+    # "+ more" 확장 영역
+    with st.expander("+ more"):
+        table = st.session_state.today_words20_table
+        if isinstance(table, str) and table.startswith("error:"):
+            st.error(table)
+        else:
+            st.dataframe(table, use_container_width=True)
+            
+    

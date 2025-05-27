@@ -1,7 +1,6 @@
 import streamlit as st
 from word_data import load_words_from_excel
 from admin import show_admin_panel
-import random
 
 import requests
 from bs4 import BeautifulSoup
@@ -14,6 +13,7 @@ from selenium.webdriver.common.by import By
 import time
 from bs4 import BeautifulSoup
 import re
+import random
 
 import csv
 
