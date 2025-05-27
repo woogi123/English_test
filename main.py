@@ -1,27 +1,21 @@
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
-from wordbook_high import run_wordbook_high
-from wordbook_toeic import run_wordbook_toeic
-from wordbook_teps import run_wordbook_teps
+from word_data import load_words_from_excel, get_today_words
+
+SUNEUNG_FILE = "suneung.csv"
+TOEIC_FILE = "toeic.csv"
+TEPS_FILE = "teps.csv"
 
 def run_main():
-
-    # 오늘의 단어 크롤링 함수
-    @st.cache_data(show_spinner=False)
-    def get_today_word():
-        try:
-            url = "https://en.dict.naver.com/#/main"
-            response = requests.get(url, timeout=5)
-            soup = BeautifulSoup(response.text, "html.parser")
-            # 예시 걍 아무거나 넣었음
-            return {"word": "diligent", "meaning": "성실한", "example": "She is a diligent student."}
-        except:
-            return {"word": "diligent", "meaning": "성실한", "example": "She is a diligent student."} 
-
-    # 오늘의 단어 정보
-    today = get_today_word()
-                
+    # 오늘의 단어 불러오기?
+    try:
+        words = get_today_words()
+        if words and isinstance(words, list):
+            today = words[0]
+    except Exception as e:
+        today = {"word": "Error", "meaning": f"불러오기 실패: {e}", "example": ""}
+                    
     # 메인 콘텐츠
     st.markdown("<div class='title'>Your Vocab</div>", unsafe_allow_html=True)
     st.markdown("<div class='subtitle'>Choose your learning mode</div>", unsafe_allow_html=True)
@@ -33,19 +27,21 @@ def run_main():
         st.write("기본 영단어 학습")
         if st.button("수능 vocab"):
             st.session_state.page = "wordbook_high"
+            st.session_state.wordbook = load_words_from_excel(SUNEUNG_FILE)
             st.rerun()
     with col2:
         st.markdown("### 📕 TOEIC")
         st.write("비즈니스 중심 영어")
         if st.button("TOEIC voab"):
             st.session_state.page = "wordbook_toeic"
+            st.session_state.wordbook = load_words_from_excel(TOEIC_FILE)
             st.rerun()
-
     with col3:
         st.markdown("### 📘 TEPS")
         st.write("고급 독해 어휘")
         if st.button("TEPS vocab"):
             st.session_state.page = "wordbook_teps"
+            st.session_state.wordbook = load_words_from_excel(TEPS_FILE)
             st.rerun()
 
     st.markdown("---")
@@ -53,7 +49,7 @@ def run_main():
     # 오늘의 단어 카드
     st.markdown("## 📅 Today's word")
     st.markdown(f"### `{today['word']}` — {today['meaning']}")
-    st.markdown(f"> _{today['example']}_")
+    #st.markdown(f"> _{today['example']}_")
     if st.button("→ 오늘의 단어 보기"):
         st.session_state.page = "todays_word"
         st.rerun()

@@ -107,15 +107,27 @@ def run_today_words():
     st.markdown("---")
 
     if st.button("📝 Today's test"):
+        today_words = st.session_state.today_words  # 네이버 크롤링 단어
+        df = st.session_state.today_words20_table  # more 단어
+        more_words = []
+        if isinstance(df, pd.DataFrame):
+            for _, row in df.iterrows():
+                more_words.append({
+                    "word": row["word"],
+                    "meaning": row["meaning"],
+                    "example": row.get("example", "")
+                })
+        full_list = today_words + more_words
+
         st.session_state.test_type = "today"
-        st.session_state.questions = st.session_state.today_words
+        st.session_state.questions = full_list
         st.session_state.q_index = 0
         st.session_state.score = 0
         st.session_state.correct = 0
         st.session_state.wrong = 0
         st.session_state.wrong_words = []
         st.session_state.page = "test"
-        st.session_state.show_ranking = True
+        st.session_state.show_ranking = False
         st.rerun()
 
     # 오늘의 추가 단어표 고정 로딩

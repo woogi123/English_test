@@ -1,16 +1,15 @@
 import streamlit as st
 from word_data import load_words_from_excel
 from admin import show_admin_panel
-import time
+import time, csv, re
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
 from bs4 import BeautifulSoup
-import random
 import requests
-import csv
-import re
+import pandas as pd
 
 
 def get_today_words_from_naver():
@@ -47,20 +46,24 @@ def get_today_words_from_naver():
 
     finally:
         driver.quit()
+        
+# 실행
+word_list = get_today_words_from_naver()
+print(f"총 {len(word_list)}개 단어 추출됨.")
+for word, meaning in word_list:
+    print(f"{word} - {meaning}")
 
 
 def get_teps():
-    options = ChromeOptions()
+    options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
 
-    # 각자 환경에 맞게 msedgedriver 경로 지정
-    service = ChromeService(executable_path="C:\\Users\\lsj55\\Desktop\\eng_test\\chromedriver-win64\\chromedriver.exe")
-    driver = webdriver.Chrome(service=service, options=options)
-    
+    driver = webdriver.Chrome(service=Service(), options=options)
     driver.get("https://blog.naver.com/lblucy/223865867643")
 
+    # iframe 내부로 진입
     driver.switch_to.frame("mainFrame")
     time.sleep(2)
 
@@ -126,40 +129,58 @@ def trans_teps_data(text_lines):
 
     return parsed
 
-raw_data = get_teps()
+
+raw_data = get_teps()  # 이미 dict 형태로 되어 있음
 
 def get_variants(word):
-    return list(filter(None, [
-        word,
-        word + 's',
-        word + 'ed',
-        word + 'ing',
-        word + 'es',
-        word + 'd' if word.endswith('e') else ''
-    ]))
+    variants = {word}
 
+    # 기본형
+    if word.endswith('e'):
+        variants.add(word + 'd')
+    else:
+        variants.add(word + 'ed')
+
+    variants.add(word + 'ing')
+
+    # 3인칭 단수형
+    if word.endswith(('s', 'x', 'z', 'ch', 'sh', 'o')):
+        variants.add(word + 'es')
+    else:
+        variants.add(word + 's')
+
+    return list(filter(None, variants))
+
+def replace_variants_in_example(example, variants):
+    # 정규식 패턴 만들기
+    pattern = r'\b(' + '|'.join(map(re.escape, variants)) + r')\b'
+
+    # 단어가 대문자로 시작하는 경우도 매치되도록 하고, 전부 동일한 '_________'로 치환
+    return re.sub(pattern, "_________", example, flags=re.IGNORECASE)
+
+# 사용 예
 dict_result = []
 
 for item in raw_data:
     word = item.get("단어")
-    meaning = item.get("뜻")
+    meaning = item.get("의미")
     example = item.get("예문")
-    example_meaning = item.get("해석", "")
+    example_meaning = item.get("뜻")
 
-    pattern = r'\b' + re.escape(word) + r'\b'
-    replaced_example = re.sub(pattern, "_________", example, flags=re.IGNORECASE)
+    if not (word and example and meaning and example_meaning):
+        continue  # 아무거나 비어있으면 스킵
 
-    entry = {
+    variants = get_variants(word)
+    replaced_example = replace_variants_in_example(example, variants)
+
+    dict_result.append({
         "word": word,
         "meaning": meaning,
         "example": replaced_example,
-    }
+        "example_meaning": example_meaning
+    })
 
-    if example_meaning:
-        entry["example_meaning"] = example_meaning
-
-    dict_result.append(entry)
-
+# ✅ 파일 저장
 with open("teps.csv", "w", newline="", encoding="utf-8-sig") as f:
     writer = csv.DictWriter(f, fieldnames=["word", "meaning", "example", "example_meaning"])
     writer.writeheader()
@@ -167,13 +188,8 @@ with open("teps.csv", "w", newline="", encoding="utf-8-sig") as f:
         writer.writerow(entry)
 
 
-# 실행
-word_list = get_today_words_from_naver()
-print(f"총 {len(word_list)}개 단어 추출됨.")
-for word, meaning in word_list:
-    print(f"{word} - {meaning}")
-
 def run_wordbook_teps():
+   
     # ✅ TEPS 단어장 파일 경로
     FILE_PATH = "teps.csv"
 
@@ -202,7 +218,7 @@ def run_wordbook_teps():
     # ✅ 시험으로 이동 버튼
     if st.button("📝 taking a test", key="to_test_wordbook"):
         st.session_state["test_type"] = "teps"
-        st.session_state.questions = random.sample(load_words_from_excel(FILE_PATH), 20)
+        st.session_state.questions = load_words_from_excel(FILE_PATH) 
         st.session_state.page = "test"
         st.session_state.q_index = 0
         st.session_state.score = 0
@@ -210,12 +226,6 @@ def run_wordbook_teps():
         st.session_state.wrong = 0
         st.session_state.wrong_words = []
         st.session_state.show_ranking = False
-        
-        # 이전 테스트 상태들 초기화
-        st.session_state.submitted = False
-        st.session_state.answer_input = ""
-        st.session_state.feedback_message = ("info", "")
-        
         st.rerun()
 
     # ✅ 탭 나누기

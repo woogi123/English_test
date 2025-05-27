@@ -8,7 +8,7 @@ def add_word():
         new_example = st.text_input("예문")
         submitted = st.form_submit_button("단어 추가하기")
         if submitted:
-            if not new_word or not new_meaning:
+            if not new_word or not new_meaning or not new_example:
                 st.warning("항목을 모두 입력하세요.")
             else:
                 try:
@@ -19,7 +19,7 @@ def add_word():
                     })
                     save_words_to_excel(st.session_state.dataset, st.session_state.wordbook)
                     st.success(f"단어 '{new_word}' 추가 완료!")
-                    st.rerun()
+                    #st.rerun()
                 except Exception:
                     st.error("단어 추가에 실패했습니다.")
 
@@ -39,7 +39,7 @@ def delete_word():
                     if before != after:
                         save_words_to_excel(st.session_state.dataset, st.session_state.wordbook)
                         st.success(f"'{target}' 단어 삭제 완료!")
-                        st.rerun()
+                        #st.rerun()
                     else:
                         st.warning(f"'{target}' 단어를 찾을 수 없습니다")
                 except Exception:
@@ -68,7 +68,7 @@ def edit_word():
                             }
                             save_words_to_excel(st.session_state.dataset, st.session_state.wordbook)
                             st.success(f"{new_word} 수정 완료!")
-                            st.rerun()
+                            #st.rerun()
                         except Exception:
                             st.error("단어 수정에 실패했습니다.")
 
