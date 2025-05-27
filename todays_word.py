@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 import csv
 import re
 import pandas as pd
+from datetime import datetime
 
 # 여기서부터는 추가된 20개 오늘의 단어입니다
 
@@ -121,19 +122,18 @@ def run_today_words():
     if "today_words20_table" not in st.session_state:
         try:
             df = pd.read_csv("today_words20.csv")
-            df_sampled = df.sample(n=20, random_state=42).reset_index(drop=True)
+            df_sampled = df.sample(n=20, random_state=None).reset_index(drop=True)
             df_sampled.index = range(1, 21)
             df_sampled.index.name = "No."
             st.session_state.today_words20_table = df_sampled
         except Exception as e:
             st.session_state.today_words20_table = f"error: {e}"
 
-    # "+ more" 확장 영역
-    with st.expander("+ more"):
+    # 데이터 출력
+    with st.expander("+ more", expanded=True):
         table = st.session_state.today_words20_table
         if isinstance(table, str) and table.startswith("error:"):
             st.error(table)
         else:
             st.dataframe(table, use_container_width=True)
             
-    
