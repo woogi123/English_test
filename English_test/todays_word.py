@@ -120,23 +120,22 @@ def run_today_words():
         st.session_state.show_ranking = True
         st.rerun()
 
-    # "+ more" 확장 영역 추가
-    with st.expander("+ more"):
+
+        # 오늘의 추가 단어표 고정 로딩
+    if "today_words20_table" not in st.session_state:
         try:
-            # CSV 파일 불러오기
             df = pd.read_csv("today_words20.csv")
-
-            # 무작위로 20개 선택
-            df_sampled = df.sample(n=20, random_state=None).reset_index(drop=True)
-
-            # 번호 붙이기
+            df_sampled = df.sample(n=20, random_state=42).reset_index(drop=True)
             df_sampled.index = range(1, 21)
             df_sampled.index.name = "No."
-
-            # 표 출력
-            st.dataframe(df_sampled, use_container_width=True)
-
-        except FileNotFoundError:
-            st.error("❌ today_words20.csv 파일을 찾을 수 없습니다.")
+            st.session_state.today_words20_table = df_sampled
         except Exception as e:
-            st.error(f"오류가 발생했습니다: {e}")
+            st.session_state.today_words20_table = f"error: {e}"
+
+    # "+ more" 확장 영역
+    with st.expander("+ more"):
+        table = st.session_state.today_words20_table
+        if isinstance(table, str) and table.startswith("error:"):
+            st.error(table)
+        else:
+            st.dataframe(table, use_container_width=True)

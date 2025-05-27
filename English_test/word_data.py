@@ -2,6 +2,12 @@ import streamlit as st
 import pandas as pd
 import random
 import datetime
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.common.by import By
+import time
+
 
 
 def load_words_from_excel(file):
@@ -36,21 +42,48 @@ def save_words_to_excel(dataset_name, words_list):
     df.to_excel(file_path, index=False)
 
 
-# ✅ 오늘의 단어 (임시 all_words)
-all_words = [
-    {"word": "abandon", "meaning": "버리다", "example": "He had to abandon his car in the storm."},
-    {"word": "approach", "meaning": "접근하다", "example": "As we approached the city, the traffic increased."},
-    {"word": "determine", "meaning": "결정하다", "example": "We need to determine the cause of the error."},
-    {"word": "negotiation", "meaning": "협상", "example": "The negotiation between the two companies was successful."},
-    {"word": "invoice", "meaning": "송장", "example": "Please attach the invoice to your payment confirmation."},
-    {"word": "conference", "meaning": "회의", "example": "She will speak at an international education conference."},
-    {"word": "alleviate", "meaning": "완화하다", "example": "The new policy is expected to alleviate traffic congestion."},
-    {"word": "substantial", "meaning": "상당한", "example": "The company made a substantial investment in research."},
-    {"word": "implication", "meaning": "영향", "example": "The decision will have serious implications for the economy."}
-]
+# word_data.py
+
+def get_today_words_from_naver():
+    options = ChromeOptions()
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')
+    options.add_argument("user-agent=Mozilla/5.0")
+
+    # chromedriver 경로를 본인 PC에 맞게 설정하세요
+    service = ChromeService(executable_path="C:\\Users\\서민경\\Desktop\\vocab\\chromedriver-win64\\chromedriver.exe")
+    driver = webdriver.Chrome(service=service, options=options)
+
+    try:
+        url = "https://search.naver.com/search.naver?query=오늘의+단어"
+        driver.get(url)
+        time.sleep(2)
+
+        words = []
+        word_links = driver.find_elements(By.CSS_SELECTOR, "a.word")
+
+        for link in word_links:
+            try:
+                word = link.find_element(By.TAG_NAME, "strong").text.strip()
+                meaning = link.find_element(By.XPATH, "./following-sibling::span[@class='mean']").text.strip()
+                words.append({"word": word, "meaning": meaning, "example": ""})
+            except Exception as e:
+                print(f"❗ 오류 발생: {e}")
+                continue
+
+        return words
+
+    finally:
+        driver.quit()
+
 
 def get_today_words():
-    """오늘의 단어: 날짜 기반 랜덤 5개"""
-    today = datetime.date.today()
-    random.seed(today.toordinal())
-    return random.sample(all_words, 5)
+    try:
+        words = get_today_words_from_naver()
+        if not words:
+            return [{"word": "No words found", "meaning": "오늘의 단어를 찾을 수 없습니다.", "example": ""}]
+        return words
+    except Exception as e:
+        return [{"word": "Error", "meaning": f"크롤링 중 오류 발생: {e}", "example": ""}]
+
+
