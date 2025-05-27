@@ -168,7 +168,7 @@ def show_sidebar():
                     # 단어 불러오기
                     suneung = load_words_from_excel("suneung.csv")   
                     toeic = load_words_from_excel("toeic.csv")
-                    teps = load_words_from_excel("teps_words.csv")
+                    teps = load_words_from_excel("teps.csv")
 
                     all_words = suneung + toeic + teps
 
