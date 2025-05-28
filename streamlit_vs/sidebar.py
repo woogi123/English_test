@@ -126,11 +126,11 @@ def show_sidebar():
             if st.button("🔁 Restart Test"):
                 st.success("시험을 재시작합니다.")
                 if source == "suneung":
-                    st.session_state.questions = load_words_from_excel(SUNEUNG_FILE)
+                    st.session_state.questions = random.sample(load_words_from_excel(SUNEUNG_FILE), 20)
                 elif source == "toeic":
-                    st.session_state.questions = load_words_from_excel(TOEIC_FILE)
+                    st.session_state.questions = random.sample(load_words_from_excel(TOEIC_FILE), 20)
                 elif source == "teps":
-                    st.session_state.questions = load_words_from_excel(TEPS_FILE)
+                    st.session_state.questions = random.sample(load_words_from_excel(TEPS_FILE), 20)
                 elif source == "today":
                     st.session_state.questions = get_today_words()
                 else:
@@ -152,7 +152,7 @@ def show_sidebar():
                     st.session_state.page = "wordbook_toeic"
                 elif test_type == "teps":
                     st.session_state.page = "wordbook_teps"
-                elif source == "today":
+                elif test_type == "today":
                     st.session_state.page = "todays_word"
                 else:
                     st.warning("먼저 시험 유형이 설정되어야 합니다.")

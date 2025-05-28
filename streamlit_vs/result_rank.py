@@ -45,7 +45,10 @@ def run_result_rank():
         st.markdown(f"- 틀린 개수: {wrong}")
         st.markdown("---")
         st.markdown("### 📊 Total")
-        st.info(f"🔁 총 테스트 횟수: **{total}회**  \n✅ 2개 이상 맞춘 횟수: **{passed}회**")
+        if not user_email:
+                st.warning("로그인이 필요한 기능입니다.")
+        else :
+            st.info(f"🔁 총 테스트 횟수: **{total}회**  \n✅ 당신의 랭킹: **{passed}회**")
         # **이 부분 나중에 your ranking 으로 바꿔서 보여주기**
 
     # 랭킹+리뷰 탭
@@ -67,22 +70,40 @@ def run_result_rank():
         with tab3:
             st.subheader("❌ Review")
             for w in wrong_words:
-                st.markdown(f"""
-                <div style='padding: 10px; background-color: #f7f7f7; margin-bottom: 10px; border-radius: 6px;'>
-                    <b>{w['word']}</b><br>
-                    뜻: {w['meaning']}<br>
-                    예문: <i>{w['example']}</i>
-                </div>
-                """, unsafe_allow_html=True)
+                test_type = st.session_state.get("test_type")
+                if test_type == "today":
+                    st.markdown(f"""
+                    <div style='padding: 10px; background-color: #f7f7f7; margin-bottom: 10px; border-radius: 6px;'>
+                        <b>{w['word']}</b><br>
+                        뜻: {w['meaning']}<br>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else :
+                    st.markdown(f"""
+                    <div style='padding: 10px; background-color: #f7f7f7; margin-bottom: 10px; border-radius: 6px;'>
+                        <b>{w['word']}</b><br>
+                        뜻: {w['meaning']}<br>
+                        예문: <i>{w['example']}</i>
+                    </div>
+                    """, unsafe_allow_html=True)
     # 리뷰 탭만
     else:
         with tab2:
             st.subheader("❌ Review")
             for w in wrong_words:
-                st.markdown(f"""
-                <div style='padding: 10px; background-color: #f7f7f7; margin-bottom: 10px; border-radius: 6px;'>
-                    <b>{w['word']}</b><br>
-                    뜻: {w['meaning']}<br>
-                    예문: <i>{w['example']}</i>
-                </div>
-                """, unsafe_allow_html=True)
+                test_type = st.session_state.get("test_type")
+                if test_type == "today":
+                    st.markdown(f"""
+                    <div style='padding: 10px; background-color: #f7f7f7; margin-bottom: 10px; border-radius: 6px;'>
+                        <b>{w['word']}</b><br>
+                        뜻: {w['meaning']}<br>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else :
+                    st.markdown(f"""
+                    <div style='padding: 10px; background-color: #f7f7f7; margin-bottom: 10px; border-radius: 6px;'>
+                        <b>{w['word']}</b><br>
+                        뜻: {w['meaning']}<br>
+                        예문: <i>{w['example']}</i>
+                    </div>
+                    """, unsafe_allow_html=True)

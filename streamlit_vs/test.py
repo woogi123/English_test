@@ -26,7 +26,7 @@ def run_test():
                 st.session_state.questions = data[:20]  # ✅ 순서 고정
 
             elif test_type == "final":
-                pass  # 추후 구현
+                pass  #?????
 
             else:
                 st.error("❗ 유효하지 않은 테스트 유형입니다.")
@@ -118,3 +118,4 @@ def run_test():
                 st.session_state.answer_input = ""
                 st.session_state["feedback_message"] = ("info", "")
                 st.rerun()
+              

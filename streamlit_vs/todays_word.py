@@ -3,16 +3,16 @@ from word_data import get_today_words  # 이미 만든 함수에서 20개 단어
 import requests
 from word_data import load_words_from_excel
 from admin import show_admin_panel
-import time
+from datetime import datetime
 from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.edge.service import Service as EdgeService
+from selenium.webdriver.edge.options import Options as EdgeOptions
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
 import csv
 import re
 import pandas as pd
-
+from datetime import datetime
 
 # 여기서부터는 추가된 20개 오늘의 단어입니다
 
@@ -104,39 +104,51 @@ def run_today_words():
             st.rerun()
 
     st.caption(f"{idx + 1} / {len(words)}")
-
-
     st.markdown("---")
 
     if st.button("📝 Today's test"):
+        today_words = st.session_state.today_words  # 네이버 크롤링 단어
+        df = st.session_state.today_words20_table  # more 단어
+        more_words = []
+        if isinstance(df, pd.DataFrame):
+            for _, row in df.iterrows():
+                more_words.append({
+                    "word": row["word"],
+                    "meaning": row["meaning"],
+                    "example": row.get("example", "")
+                })
+        full_list = today_words + more_words
+
         st.session_state.test_type = "today"
-        st.session_state.questions = st.session_state.today_words
+        st.session_state.questions = full_list
         st.session_state.q_index = 0
         st.session_state.score = 0
         st.session_state.correct = 0
         st.session_state.wrong = 0
         st.session_state.wrong_words = []
         st.session_state.page = "test"
-        st.session_state.show_ranking = True
+        st.session_state.show_ranking = False
         st.rerun()
-
-    # "+ more" 확장 영역 추가
-    with st.expander("+ more"):
+    
+    now = datetime.now()
+    seed = now.year * 10000 + now.month * 100 + now.day
+    
+    if "today_words20_table" not in st.session_state or st.session_state.get("sampled_date") != seed:
         try:
-            # CSV 파일 불러오기
             df = pd.read_csv("today_words20.csv")
-
-            # 무작위로 20개 선택
-            df_sampled = df.sample(n=20, random_state=None).reset_index(drop=True)
-
-            # 번호 붙이기
+            df_sampled = df.sample(n=20, random_state=seed).reset_index(drop=True)
             df_sampled.index = range(1, 21)
             df_sampled.index.name = "No."
-
-            # 표 출력
-            st.dataframe(df_sampled, use_container_width=True)
-
-        except FileNotFoundError:
-            st.error("❌ today_words20.csv 파일을 찾을 수 없습니다.")
+            st.session_state.today_words20_table = df_sampled
+            st.session_state.sampled_date = seed  # 날짜 저장
         except Exception as e:
-            st.error(f"오류가 발생했습니다: {e}")
+            st.session_state.today_words20_table = f"error: {e}"
+
+    # 데이터 출력
+    with st.expander("+ more", expanded=True):
+        table = st.session_state.today_words20_table
+        if isinstance(table, str) and table.startswith("error:"):
+            st.error(table)
+        else:
+            st.dataframe(table, use_container_width=True)
+            
