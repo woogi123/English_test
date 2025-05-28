@@ -3,7 +3,7 @@ from word_data import get_today_words  # 이미 만든 함수에서 20개 단어
 import requests
 from word_data import load_words_from_excel
 from admin import show_admin_panel
-import time
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.edge.options import Options as EdgeOptions
@@ -129,15 +129,18 @@ def run_today_words():
         st.session_state.page = "test"
         st.session_state.show_ranking = False
         st.rerun()
-
-    # 오늘의 추가 단어표 고정 로딩
-    if "today_words20_table" not in st.session_state:
+    
+    now = datetime.now()
+    seed = now.year * 10000 + now.month * 100 + now.day
+    
+    if "today_words20_table" not in st.session_state or st.session_state.get("sampled_date") != seed:
         try:
             df = pd.read_csv("today_words20.csv")
-            df_sampled = df.sample(n=20, random_state=None).reset_index(drop=True)
+            df_sampled = df.sample(n=20, random_state=seed).reset_index(drop=True)
             df_sampled.index = range(1, 21)
             df_sampled.index.name = "No."
             st.session_state.today_words20_table = df_sampled
+            st.session_state.sampled_date = seed  # 날짜 저장
         except Exception as e:
             st.session_state.today_words20_table = f"error: {e}"
 
